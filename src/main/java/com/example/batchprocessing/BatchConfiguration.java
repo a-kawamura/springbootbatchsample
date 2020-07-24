@@ -8,6 +8,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
@@ -57,11 +58,20 @@ public class BatchConfiguration {
 
 	@Bean
 	public Job imporUserJob(JobCompletionNotificationListener listener,
-			Step step1) {
+			Step step0, Step step1) {
 		return jobBuilderFactory.get("importUserJob")
 				.incrementer(new RunIdIncrementer()).listener(listener)
-				.flow(step1).end().build();
+				.start(step0).next(step1).build();
+	}
 
+	@Bean
+	public Tasklet deleteTaskl() {
+		return new DeleteTask();
+	}
+
+	@Bean
+	public Step step0() {
+		return stepBuilderFactory.get("step0").tasklet(deleteTaskl()).build();
 	}
 
 	@Bean
